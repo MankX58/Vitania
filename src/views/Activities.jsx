@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../store'
-import { CAT, addDays, iso, fmtDate } from '../data'
+import { CAT, addDays, iso, fmtDate, hasEnded } from '../data'
 import { Page, Choice, Arch, Ic, Video, SelectButton, OptionGrid } from '../ui'
 
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1)
@@ -21,7 +21,7 @@ export function ActItem({ a }) {
       <h3>{a.title}</h3>
       <span className="when">{shortDay(a.date)}, {a.time}</span>
       {(S.joined[a.id] || full) && <span className="sub" style={{ marginTop: 6 }}>
-        {S.joined[a.id] ? <span className="flag">Estás inscrito/a</span> : <span className="flag full">Completo</span>}
+        {S.joined[a.id] ? <span className="flag">{hasEnded(a) ? 'Completada' : 'Estás inscrito/a'}</span> : <span className="flag full">Completo</span>}
       </span>}
     </span>
     <Ic n="go" size={26} w="bold" className="go" />
@@ -29,9 +29,9 @@ export function ActItem({ a }) {
 }
 
 export function List() {
-  const { acts, modal } = useApp()
+  const { S, acts, modal } = useApp()
   const [cat, setCat] = useState('')
-  const shown = acts.filter(a => !cat || a.cat === cat)
+  const shown = acts.filter(a => (!hasEnded(a) || S.joined[a.id]) && (!cat || a.cat === cat))
   const groups = shown.reduce((m, a) => ((m[a.date] ??= []).push(a), m), {})
   const options = [['', 'Todas', 'grid'], ...Object.entries(CAT).map(([k, c]) => [k, c.n, c.ic])]
   const current = options.find(o => o[0] === cat)
@@ -111,8 +111,10 @@ export function Detail({ id }) {
   const full = left <= 0 && !joined
   const c = CAT[a.cat]
   const online = !a.modes.includes('presencial')
+  const ended = hasEnded(a)
 
   const join = async () => {
+    if (hasEnded(a)) return say('Esta actividad ya terminó.')
     if (!mode) return say('Elige si irás en persona o en línea.')
     set(s => ({
       joined: { ...s.joined, [id]: mode }, wait: s.wait.filter(w => w !== id),
@@ -145,7 +147,10 @@ export function Detail({ id }) {
 
     <section className="card" aria-labelledby="d2">
       <h2 id="d2">Tu lugar</h2>
-      {joined ? <>
+      {ended ? (joined
+        ? <p className="big"><strong>Completaste esta actividad.</strong> Ya cuenta en tu semana.</p>
+        : <p className="big">Esta actividad ya terminó. Puedes buscar otra.</p>
+      ) : joined ? <>
         <p className="big"><strong>Estás inscrito/a, {joined === 'virtual' ? 'en línea' : 'en persona'}.</strong></p>
         {joined === 'virtual' && (a.zoom
           ? <a className="btn" style={{ marginTop: 12 }} href={a.zoom} target="_blank" rel="noopener noreferrer"><Ic n="video" /> Abrir Zoom</a>

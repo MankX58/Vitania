@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
-import { seedActs } from './data'
+import { seedActs, hasEnded } from './data'
 
 const DEF = {
   user: null,                      // se llena en el onboarding
@@ -103,6 +103,17 @@ export function Provider({ children }) {
       .filter(a => !S.blocked.includes(a.host))
       .sort((x, y) => (x.date + x.time).localeCompare(y.date + y.time)),
   [S.custom, S.blocked])
+
+  // Si estabas inscrito/a y la actividad ya terminó, ese día cuenta como completado.
+  useEffect(() => {
+    const check = () => {
+      const add = acts.filter(a => S.joined[a.id] && hasEnded(a)).map(a => a.date).filter(d => !S.done.includes(d))
+      if (add.length) setS(s => ({ ...s, done: [...new Set([...s.done, ...add])] }))
+    }
+    check()
+    const i = setInterval(check, 60000)
+    return () => clearInterval(i)
+  }, [acts, S.joined, S.done])
 
   // cupos ocupados = base de la actividad + personas inscritas en Neon
   const taken = a => a.taken + (S.counts[a.id] || 0)

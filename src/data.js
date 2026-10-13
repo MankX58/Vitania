@@ -91,3 +91,6 @@ export const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
 export const addDays = (n, from = new Date()) => { const d = new Date(from); d.setDate(d.getDate() + n); return d }
 export const fmtDate = s => new Date(s + 'T00:00').toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })
 export const seedActs = () => SEED.map(a => ({ ...a, date: iso(addDays(a.day)) }))
+
+/** Una actividad termina a su hora de inicio + su duración. */
+export const hasEnded = (a, now = Date.now()) => new Date(`${a.date}T${a.time}`).getTime() + a.min * 60000 <= now

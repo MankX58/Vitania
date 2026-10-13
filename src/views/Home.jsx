@@ -1,11 +1,10 @@
 import { motion } from 'framer-motion'
 import { useApp } from '../store'
-import { CAT, MENU, addDays, iso } from '../data'
+import { CAT, MENU, addDays, iso, hasEnded } from '../data'
 import { Page, Arch, Ic } from '../ui'
 import { ActItem } from './Activities'
 import { KIND } from './Citas'
 
-const GOAL = 3
 const DAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 const MEALS = [['08:30', 'Desayuno'], [null, 'Almuerzo'], ['19:30', 'Cena']]
 
@@ -59,7 +58,7 @@ export default function Home() {
   const doneCount = week.filter(d => S.done.includes(d)).length
 
   const score = a => (S.user.ints.includes(a.cat) ? 2 : 0) + (S.user.mob !== 'ninguna' ? (a.seated ? 1 : -3) : 0)
-  const rec = acts.filter(a => !S.joined[a.id] && a.date >= today).sort((a, b) => score(b) - score(a))[0]
+  const rec = acts.filter(a => !S.joined[a.id] && !hasEnded(a)).sort((a, b) => score(b) - score(a))[0]
 
   return <Page title={`${greet}, ${name}`} head={<Sky h={h} />}>
     <section className="card" aria-labelledby="hoy">
@@ -84,7 +83,7 @@ export default function Home() {
 
     <section className="card" aria-labelledby="sem">
       <h2 id="sem">Esta semana</h2>
-      <p>{doneCount >= GOAL ? 'Cumpliste tu meta.' : `${doneCount} de ${GOAL} sesiones hechas.`}</p>
+      <p>{doneCount >= 1 ? `Cumpliste tu meta: ${doneCount === 1 ? '1 día activo' : `${doneCount} días activos`}.` : 'Tu meta: hacer al menos una actividad esta semana.'}</p>
       <ul className="week plain" aria-label="Días con sesión completada">
         {DAYS.map((d, i) => <li key={d}>
           <span className={'d' + (S.done.includes(week[i]) ? ' done' : '') + (i === dayIdx ? ' today' : '')}>
