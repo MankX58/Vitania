@@ -22,6 +22,7 @@ export function Provider({ children }) {
   const [toast, setToast] = useState('')
   const [modal, setModal] = useState(null)
   const timer = useRef()
+  const [dayKey, setDayKey] = useState(() => new Date().toDateString())
   const saved = useRef('')
 
   const api = useCallback(async (path, { method = 'GET', body } = {}) => {
@@ -98,11 +99,19 @@ export function Provider({ children }) {
     check(); const i = setInterval(check, 20000); return () => clearInterval(i)
   }, [S.appts])
 
+  // Si cambia el día (pasó la medianoche o volviste a la app), se recalcula todo: "mañana" pasa a ser "hoy".
+  useEffect(() => {
+    const tick = () => setDayKey(k => { const n = new Date().toDateString(); return n === k ? k : n })
+    const i = setInterval(tick, 60000)
+    document.addEventListener('visibilitychange', tick)
+    return () => { clearInterval(i); document.removeEventListener('visibilitychange', tick) }
+  }, [])
+
   const acts = useMemo(() =>
     [...seedActs(), ...S.custom]
       .filter(a => !S.blocked.includes(a.host))
       .sort((x, y) => (x.date + x.time).localeCompare(y.date + y.time)),
-  [S.custom, S.blocked])
+  [S.custom, S.blocked, dayKey])
 
   // Si estabas inscrito/a y la actividad ya terminó, ese día cuenta como completado.
   useEffect(() => {

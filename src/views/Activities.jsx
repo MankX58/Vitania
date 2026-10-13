@@ -31,7 +31,7 @@ export function ActItem({ a }) {
 export function List() {
   const { S, acts, modal } = useApp()
   const [cat, setCat] = useState('')
-  const shown = acts.filter(a => (!hasEnded(a) || S.joined[a.id]) && (!cat || a.cat === cat))
+  const shown = acts.filter(a => (!hasEnded(a) || (S.joined[a.id] && a.date === iso(new Date()))) && (!cat || a.cat === cat))
   const groups = shown.reduce((m, a) => ((m[a.date] ??= []).push(a), m), {})
   const options = [['', 'Todas', 'grid'], ...Object.entries(CAT).map(([k, c]) => [k, c.n, c.ic])]
   const current = options.find(o => o[0] === cat)

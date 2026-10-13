@@ -23,7 +23,6 @@ function localNow(tz) {
   return { date: `${p.year}-${p.month}-${p.day}`, hm: `${p.hour}:${p.minute}` }
 }
 const naive = (date, hm) => Date.parse(`${date}T${hm}:00Z`)   // hora "de reloj" sin zona, solo para comparar
-const addDaysIso = (iso, n) => new Date(naive(iso, '00:00') + n * 864e5).toISOString().slice(0, 10)
 
 /** Router /api: valida el JWT de Auth0 y guarda todo en Neon (Postgres). */
 export function createApi(env) {
@@ -182,9 +181,13 @@ export function createApi(env) {
       }
 
       if (doc.prefs?.notifyDay) {
-        const acts = [...SEED.map(x => ({ ...x, date: addDaysIso(today, x.day) })), ...classes.map(c => ({ ...c.doc, id: c.id }))]
+        const custom = classes.map(c => ({ ...c.doc, id: c.id }))
         for (const [id, mode] of Object.entries(doc.joined ?? {})) {
-          const a = acts.find(x => x.id === id)
+          // ids de ejemplo: "aer1-2026-10-14" = actividad + fecha de esa ocurrencia
+          let a = custom.find(x => x.id === id)
+          const m = /^([a-z0-9]+)-(\d{4}-\d\d-\d\d)$/.exec(id)
+          const seed = !a && m && SEED.find(x => x.id === m[1])
+          if (seed) a = { ...seed, id, date: m[2] }
           if (!a || a.date !== today) continue
           const at = naive(a.date, a.time)
           if (now >= at - 30 * 6e4 && now < at)

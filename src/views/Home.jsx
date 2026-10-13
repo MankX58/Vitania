@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useApp } from '../store'
-import { CAT, MENU, addDays, iso, hasEnded } from '../data'
+import { CAT, menuFor, addDays, iso, hasEnded } from '../data'
 import { Page, Arch, Ic } from '../ui'
 import { ActItem } from './Activities'
 import { KIND } from './Citas'
@@ -48,7 +48,7 @@ export default function Home() {
       href: `#/actividad/${a.id}`, icon: CAT[a.cat].ic, tone: CAT[a.cat].t,
     })),
     ...(S.meals.on ? MEALS.map(([t, n], i) => ({
-      t: t ?? S.meals.deliver, title: n, sub: MENU[dayIdx][i], href: '#/comida', icon: 'food', tone: 'sage',
+      t: t ?? S.meals.deliver, title: n, sub: menuFor(today)[i], href: '#/comida', icon: 'food', tone: 'sage',
     })) : []),
   ].sort((a, b) => a.t.localeCompare(b.t))
   const nextIdx = items.findIndex(i => i.t >= hhmm)

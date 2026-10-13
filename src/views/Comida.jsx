@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../store'
-import { ADAPT, CONDS, MENU, addDays, iso, fmtDate } from '../data'
+import { ADAPT, CONDS, menuFor, addDays, iso, fmtDate } from '../data'
 import { Page, Switch, Ic, Arch, WeekPicker } from '../ui'
 
 export default function Comida() {
@@ -29,7 +29,7 @@ export default function Comida() {
         <ul className="plain" aria-live="polite">
           {slots.map(([t, l], i) => <li key={l} className="meal-row">
             <span className="time">{t}</span>
-            <span><span className="hint">{l}</span><strong>{MENU[day][i]}</strong></span>
+            <span><span className="hint">{l}</span><strong>{menuFor(week[day])[i]}</strong></span>
           </li>)}
         </ul>
       </section>
