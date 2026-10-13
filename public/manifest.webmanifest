@@ -1,0 +1,5 @@
+{
+  "name": "Vitania", "short_name": "Vitania", "lang": "es", "start_url": "./", "display": "standalone",
+  "background_color": "#FFF1E6", "theme_color": "#C7DBF0",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
